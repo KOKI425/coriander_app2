@@ -1,3 +1,4 @@
+import 'package:coriander_app2/domain/book.dart';
 import 'package:coriander_app2/presentation/add_book/add_book_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -36,6 +37,28 @@ class BookListPage extends StatelessWidget {
                         model.fetchBooks();
                       },
                     ),
+                    onLongPress: () async {
+                      //todo:削除
+                      await showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text('${book.title}を削除しますか'),
+                            actions: [
+                              FlatButton(
+                                child: Text('OK'),
+                                onPressed: () async {
+                                  Navigator.of(context).pop();
+
+                                  //todo:削除のAPIを叩く
+                                  await deleteBook(context, model, book);
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
                   ),
                 )
                 .toList();
@@ -62,6 +85,36 @@ class BookListPage extends StatelessWidget {
           );
         }),
       ),
+    );
+  }
+
+  Future deleteBook(
+      BuildContext context, BookListModel model, Book book) async {
+    try {
+      await model.deleteBook(book);
+      await model.fetchBooks();
+    } catch (e) {
+      await _showDialog(context, e.toString());
+      print(e.toString());
+    }
+  }
+
+  Future _showDialog(BuildContext context, String title) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          actions: [
+            FlatButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }
